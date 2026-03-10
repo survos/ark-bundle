@@ -1,0 +1,7 @@
+/vendor/
+/var/
+/.phpstan/
+/phpstan-baseline.neon
+/.idea/
+/.vscode/
+/.DS_Store

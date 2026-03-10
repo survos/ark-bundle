@@ -14,6 +14,7 @@ use Museado\ArkBundle\Doctrine\ArkDoctrineListener;
 use Museado\ArkBundle\Service\ArkRegistry;
 use Museado\ArkBundle\Service\NoidMinterService;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 return static function (ContainerConfigurator $container): void {
     $container->services()
@@ -46,7 +47,6 @@ return static function (ContainerConfigurator $container): void {
             ->args([
                 service('museado_ark.registry'),
                 '%museado_ark.naan%',
-                '%museado_ark.resolver_base_url%',
                 '%museado_ark.n2t_resolve%',
             ])
 

@@ -1,0 +1,6 @@
+parameters:
+  level: 7
+  paths:
+    - src
+  ignoreErrors:
+    - '#Trait Museado\\ArkBundle\\Doctrine\\ArkableTrait is used zero times and is not analysed#'
