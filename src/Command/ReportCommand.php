@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Museado\ArkBundle\Command;
+namespace Survos\ArkBundle\Command;
 
 use Doctrine\Persistence\ManagerRegistry;
-use Museado\ArkBundle\Contract\ArkableInterface;
+use Survos\ArkBundle\Contract\ArkableInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;

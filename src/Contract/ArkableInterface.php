@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Museado\ArkBundle\Contract;
+namespace Survos\ArkBundle\Contract;
 
 interface ArkableInterface
 {

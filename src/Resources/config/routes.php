@@ -5,8 +5,9 @@ declare(strict_types=1);
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
 return static function (RoutingConfigurator $routes): void {
-    $routes->add('museado_ark_resolve', '/ark/{naan}/{name}')
-        ->controller('museado_ark.controller.redirect')
+    $routes->add('survos_ark_resolve', '/ark/{naan}/{name}')
+        ->controller('survos_ark.controller.redirect')
+        ->requirements(['name' => '.+'])
         ->methods(['GET'])
     ;
 };

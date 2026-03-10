@@ -1,5 +1,5 @@
 {
-  "name": "museado/ark-bundle",
+  "name": "survos/ark-bundle",
   "description": "Symfony bundle for ARK identifier minting and resolution",
   "type": "symfony-bundle",
   "license": "MIT",
@@ -19,12 +19,12 @@
   },
   "autoload": {
     "psr-4": {
-      "Museado\\ArkBundle\\": "src/"
+      "Survos\\ArkBundle\\": "src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Museado\\ArkBundle\\Tests\\": "tests/"
+      "Survos\\ArkBundle\\Tests\\": "tests/"
     }
   },
   "scripts": {

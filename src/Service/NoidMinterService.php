@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Museado\ArkBundle\Service;
+namespace Survos\ArkBundle\Service;
 
 final class NoidMinterService
 {

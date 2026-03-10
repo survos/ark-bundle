@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Museado\ArkBundle;
+namespace Survos\ArkBundle;
 
 use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
 
-final class MuseadoArkBundle extends AbstractBundle
+final class SurvosArkBundle extends AbstractBundle
 {
 }

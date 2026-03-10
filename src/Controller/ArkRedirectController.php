@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Museado\ArkBundle\Controller;
+namespace Survos\ArkBundle\Controller;
 
-use Museado\ArkBundle\Service\ArkRegistry;
+use Survos\ArkBundle\Service\ArkRegistry;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -42,7 +42,7 @@ final class ArkRedirectController
 
         $uri = $request->getRequestUri();
         if ($this->n2tResolve && str_ends_with($uri, '??')) {
-            return new Response('This ARK is managed by MuseadoArkBundle.', Response::HTTP_OK, ['Content-Type' => 'text/plain; charset=UTF-8']);
+            return new Response('This ARK is managed by SurvosArkBundle.', Response::HTTP_OK, ['Content-Type' => 'text/plain; charset=UTF-8']);
         }
 
         return new RedirectResponse($url, Response::HTTP_MOVED_PERMANENTLY);

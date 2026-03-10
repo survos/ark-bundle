@@ -3,4 +3,4 @@ parameters:
   paths:
     - src
   ignoreErrors:
-    - '#Trait Museado\\ArkBundle\\Doctrine\\ArkableTrait is used zero times and is not analysed#'
+    - '#Trait Survos\\ArkBundle\\Doctrine\\ArkableTrait is used zero times and is not analysed#'

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Museado\ArkBundle\Command;
+namespace Survos\ArkBundle\Command;
 
-use Museado\ArkBundle\Service\NoidMinterService;
+use Survos\ArkBundle\Service\NoidMinterService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;

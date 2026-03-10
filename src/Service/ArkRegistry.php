@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Museado\ArkBundle\Service;
+namespace Survos\ArkBundle\Service;
 
 use Doctrine\Persistence\ManagerRegistry;
-use Museado\ArkBundle\Contract\ArkableInterface;
+use Survos\ArkBundle\Contract\ArkableInterface;
 
 final class ArkRegistry
 {
@@ -17,6 +17,13 @@ final class ArkRegistry
 
     public function resolve(string $name): ?string
     {
+        if (str_contains($name, '/')) {
+            [$baseName] = explode('/', $name, 2);
+            if ($baseName !== '' && $baseName !== $name) {
+                return $this->resolve($baseName);
+            }
+        }
+
         $resolved = $this->minter->resolve($name);
         if ($resolved !== null) {
             return $this->normalizeUrl($resolved);

@@ -2,73 +2,73 @@
 
 declare(strict_types=1);
 
-use Museado\ArkBundle\Command\BindCommand;
-use Museado\ArkBundle\Command\BulkMintCommand;
-use Museado\ArkBundle\Command\MintCommand;
-use Museado\ArkBundle\Command\ReindexCommand;
-use Museado\ArkBundle\Command\ReportCommand;
-use Museado\ArkBundle\Command\ResolveCommand;
-use Museado\ArkBundle\Command\ValidateCommand;
-use Museado\ArkBundle\Controller\ArkRedirectController;
-use Museado\ArkBundle\Doctrine\ArkDoctrineListener;
-use Museado\ArkBundle\Service\ArkRegistry;
-use Museado\ArkBundle\Service\NoidMinterService;
+use Survos\ArkBundle\Command\BindCommand;
+use Survos\ArkBundle\Command\BulkMintCommand;
+use Survos\ArkBundle\Command\MintCommand;
+use Survos\ArkBundle\Command\ReindexCommand;
+use Survos\ArkBundle\Command\ReportCommand;
+use Survos\ArkBundle\Command\ResolveCommand;
+use Survos\ArkBundle\Command\ValidateCommand;
+use Survos\ArkBundle\Controller\ArkRedirectController;
+use Survos\ArkBundle\Doctrine\ArkDoctrineListener;
+use Survos\ArkBundle\Service\ArkRegistry;
+use Survos\ArkBundle\Service\NoidMinterService;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 return static function (ContainerConfigurator $container): void {
     $container->services()
-        ->set('museado_ark.minter', NoidMinterService::class)
+        ->set('survos_ark.minter', NoidMinterService::class)
             ->args([
-                '%museado_ark.naan%',
-                '%museado_ark.shoulder%',
-                '%museado_ark.template%',
-                '%museado_ark.db_type%',
-                '%museado_ark.db_path%',
+                '%survos_ark.naan%',
+                '%survos_ark.shoulder%',
+                '%survos_ark.template%',
+                '%survos_ark.db_type%',
+                '%survos_ark.db_path%',
             ])
             ->tag('kernel.reset', ['method' => 'close'])
 
-        ->set('museado_ark.registry', ArkRegistry::class)
+        ->set('survos_ark.registry', ArkRegistry::class)
             ->args([
-                service('museado_ark.minter'),
-                '%museado_ark.resolver_base_url%',
+                service('survos_ark.minter'),
+                '%survos_ark.resolver_base_url%',
                 service('doctrine')->ignoreOnInvalid(),
             ])
 
-        ->set('museado_ark.doctrine_listener', ArkDoctrineListener::class)
+        ->set('survos_ark.doctrine_listener', ArkDoctrineListener::class)
             ->args([
-                service('museado_ark.minter'),
-                '%museado_ark.auto_mint%',
+                service('survos_ark.minter'),
+                '%survos_ark.auto_mint%',
             ])
             ->tag('doctrine.event_listener', ['event' => 'prePersist'])
             ->tag('doctrine.event_listener', ['event' => 'preUpdate'])
 
-        ->set('museado_ark.controller.redirect', ArkRedirectController::class)
+        ->set('survos_ark.controller.redirect', ArkRedirectController::class)
             ->args([
-                service('museado_ark.registry'),
-                '%museado_ark.naan%',
-                '%museado_ark.n2t_resolve%',
+                service('survos_ark.registry'),
+                '%survos_ark.naan%',
+                '%survos_ark.n2t_resolve%',
             ])
 
         ->set(MintCommand::class)
-            ->args([service('museado_ark.minter')])
+            ->args([service('survos_ark.minter')])
             ->tag('console.command')
 
         ->set(BindCommand::class)
-            ->args([service('museado_ark.minter')])
+            ->args([service('survos_ark.minter')])
             ->tag('console.command')
 
         ->set(ResolveCommand::class)
-            ->args([service('museado_ark.minter')])
+            ->args([service('survos_ark.minter')])
             ->tag('console.command')
 
         ->set(ValidateCommand::class)
-            ->args([service('museado_ark.minter')])
+            ->args([service('survos_ark.minter')])
             ->tag('console.command')
 
         ->set(BulkMintCommand::class)
             ->args([
-                service('museado_ark.minter'),
+                service('survos_ark.minter'),
                 service('doctrine')->ignoreOnInvalid(),
             ])
             ->tag('console.command')
@@ -81,7 +81,7 @@ return static function (ContainerConfigurator $container): void {
 
         ->set(ReindexCommand::class)
             ->args([
-                service('museado_ark.minter'),
+                service('survos_ark.minter'),
                 service('doctrine')->ignoreOnInvalid(),
             ])
             ->tag('console.command')

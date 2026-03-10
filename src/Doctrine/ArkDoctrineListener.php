@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Museado\ArkBundle\Doctrine;
+namespace Survos\ArkBundle\Doctrine;
 
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\Event\PrePersistEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Doctrine\ORM\Events;
-use Museado\ArkBundle\Contract\ArkableInterface;
-use Museado\ArkBundle\Service\NoidMinterService;
+use Survos\ArkBundle\Contract\ArkableInterface;
+use Survos\ArkBundle\Service\NoidMinterService;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 #[AsDoctrineListener(event: Events::prePersist)]

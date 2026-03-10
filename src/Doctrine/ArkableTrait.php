@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Museado\ArkBundle\Doctrine;
+namespace Survos\ArkBundle\Doctrine;
 
 use Doctrine\ORM\Mapping as ORM;
 

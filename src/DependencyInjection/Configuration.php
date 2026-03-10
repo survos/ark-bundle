@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Museado\ArkBundle\DependencyInjection;
+namespace Survos\ArkBundle\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
@@ -11,7 +11,7 @@ final class Configuration implements ConfigurationInterface
 {
     public function getConfigTreeBuilder(): TreeBuilder
     {
-        $treeBuilder = new TreeBuilder('museado_ark');
+        $treeBuilder = new TreeBuilder('survos_ark');
 
         $treeBuilder->getRootNode()
             ->children()
