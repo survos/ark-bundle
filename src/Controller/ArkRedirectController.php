@@ -47,4 +47,19 @@ final class ArkRedirectController
 
         return new RedirectResponse($url, Response::HTTP_MOVED_PERMANENTLY);
     }
+
+    public function probe(string $naan): Response
+    {
+        if ($naan !== $this->naan) {
+            return new Response('Unknown NAAN.', Response::HTTP_NOT_FOUND);
+        }
+
+        $body = implode("\n", [
+            'ok: true',
+            sprintf('naan: %s', $naan),
+            sprintf('n2t_probe: https://n2t.net/ark:/%s/?', $naan),
+        ]);
+
+        return new Response($body, Response::HTTP_OK, ['Content-Type' => 'text/plain; charset=UTF-8']);
+    }
 }

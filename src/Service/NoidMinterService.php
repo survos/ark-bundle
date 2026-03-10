@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Survos\ArkBundle\Service;
 
+use Noid\Lib\Db;
+use Noid\Noid;
+use Noid\Storage\DatabaseInterface;
+
 final class NoidMinterService
 {
-    private string $bindingsFile;
-    private string $counterFile;
+    private ?string $noidHandle = null;
 
     public function __construct(
         private readonly string $naan,
@@ -15,17 +18,14 @@ final class NoidMinterService
         private readonly string $template,
         private readonly string $dbType,
         private readonly string $dbPath,
-    ) {
-        $suffix = $this->dbType . '-' . substr(md5($this->template), 0, 8);
-        $this->bindingsFile = rtrim($this->dbPath, '/') . '/bindings-' . $suffix . '.json';
-        $this->counterFile = rtrim($this->dbPath, '/') . '/counter-' . $suffix . '.txt';
-    }
+    ) {}
 
     public function mint(): string
     {
-        $counter = $this->nextCounter();
+        $this->initializeMinterIfNeeded();
+        $id = Noid::mint($this->open(DatabaseInterface::DB_WRITE), $this->contact());
 
-        return $this->shoulder . str_pad(base_convert((string) $counter, 10, 36), 8, '0', STR_PAD_LEFT);
+        return $this->extractNameFromNoidId((string) $id);
     }
 
     public function buildFullArk(string $name): string
@@ -40,9 +40,16 @@ final class NoidMinterService
 
     public function bind(string $name, string $url): void
     {
-        $bindings = $this->loadBindings();
-        $bindings[$name] = $url;
-        $this->saveBindings($bindings);
+        $this->initializeMinterIfNeeded();
+        Noid::bind(
+            $this->open(DatabaseInterface::DB_WRITE),
+            $this->contact(),
+            '-',
+            'set',
+            $this->toNoidId($name),
+            'where',
+            $url,
+        );
     }
 
     public function rebind(string $name, string $url): void
@@ -52,14 +59,35 @@ final class NoidMinterService
 
     public function resolve(string $name): ?string
     {
-        $bindings = $this->loadBindings();
+        $this->initializeMinterIfNeeded();
+        $value = Noid::fetch($this->open(DatabaseInterface::DB_RDONLY), 0, $this->toNoidId($name), 'where');
+        $resolved = trim((string) $value);
 
-        return $bindings[$name] ?? null;
+        return $resolved === '' ? null : $resolved;
     }
 
     public function validate(string $name): bool
     {
-        return $name !== '' && (bool) preg_match('/^[A-Za-z0-9._~:-]+$/', $name);
+        $this->initializeMinterIfNeeded();
+        $messages = Noid::validate($this->open(DatabaseInterface::DB_RDONLY), '-', $this->toNoidId($name));
+        if ($messages === []) {
+            return false;
+        }
+
+        $isValid = false;
+        foreach ($messages as $message) {
+            if (!is_string($message)) {
+                continue;
+            }
+            if (str_starts_with($message, 'iderr:')) {
+                return false;
+            }
+            if (str_starts_with($message, 'id: ')) {
+                $isValid = true;
+            }
+        }
+
+        return $isValid;
     }
 
     public function extractNoid(string $ark): ?string
@@ -74,60 +102,84 @@ final class NoidMinterService
 
     public function close(): void
     {
-    }
-
-    private function nextCounter(): int
-    {
-        $this->ensureStorage();
-
-        $current = 0;
-        if (is_file($this->counterFile)) {
-            $raw = file_get_contents($this->counterFile);
-            if ($raw !== false) {
-                $current = (int) trim($raw);
-            }
+        if ($this->noidHandle === null) {
+            return;
         }
 
-        $next = $current + 1;
-        file_put_contents($this->counterFile, (string) $next);
-
-        return $next;
+        Db::dbclose($this->noidHandle, true);
+        $this->noidHandle = null;
     }
 
-    /**
-     * @return array<string, string>
-     */
-    private function loadBindings(): array
+    private function initializeMinterIfNeeded(): void
     {
-        $this->ensureStorage();
+        $settings = $this->settings();
 
-        if (!is_file($this->bindingsFile)) {
-            return [];
-        }
-
-        $raw = file_get_contents($this->bindingsFile);
-        if ($raw === false || $raw === '') {
-            return [];
-        }
-
-        $decoded = json_decode($raw, true);
-
-        return is_array($decoded) ? array_filter($decoded, static fn (mixed $v): bool => is_string($v)) : [];
-    }
-
-    /**
-     * @param array<string, string> $bindings
-     */
-    private function saveBindings(array $bindings): void
-    {
-        $this->ensureStorage();
-        file_put_contents($this->bindingsFile, (string) json_encode($bindings, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-    }
-
-    private function ensureStorage(): void
-    {
         if (!is_dir($this->dbPath)) {
             mkdir($this->dbPath, 0775, true);
         }
+
+        $readme = rtrim($this->dbPath, '/') . '/NOID/README';
+        if (is_file($readme)) {
+            return;
+        }
+
+        Db::dbcreate(
+            $settings,
+            $this->contact(),
+            $this->template,
+            'long',
+            $this->naan,
+            'Survos',
+            $this->shoulder !== '' ? $this->shoulder : 'ark',
+        );
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function settings(): array
+    {
+        return [
+            'db_type' => $this->dbType,
+            'storage' => [
+                $this->dbType => [
+                    'data_dir' => $this->dbPath,
+                ],
+            ],
+        ];
+    }
+
+    private function open(string $flags): string
+    {
+        if ($this->noidHandle !== null) {
+            return $this->noidHandle;
+        }
+
+        $opened = Db::dbopen($this->settings(), $flags);
+        $this->noidHandle = (string) $opened;
+
+        return $this->noidHandle;
+    }
+
+    private function contact(): string
+    {
+        return 'ark@survos.org';
+    }
+
+    private function toNoidId(string $name): string
+    {
+        return sprintf('%s/%s', $this->naan, $name);
+    }
+
+    private function extractNameFromNoidId(string $id): string
+    {
+        $prefix = $this->naan . '/';
+        if (str_starts_with($id, $prefix)) {
+            return substr($id, strlen($prefix));
+        }
+
+        $slash = strpos($id, '/');
+
+        return $slash === false ? $id : substr($id, $slash + 1);
     }
 }

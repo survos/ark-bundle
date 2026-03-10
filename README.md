@@ -68,5 +68,10 @@ survos_ark:
 The bundle exposes:
 
 - `GET /ark/{naan}/{name}`
+- `GET /ark/{naan}/_probe` (NAAN probe endpoint)
 
 It also supports inflections like `?info` and policy lookup (`??`).
+
+## Storage Engine
+
+Minting and binding are backed by `daniel-km/noid`.
