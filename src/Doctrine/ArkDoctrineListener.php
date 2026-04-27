@@ -9,6 +9,7 @@ use Doctrine\ORM\Event\PrePersistEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Doctrine\ORM\Events;
 use Survos\ArkBundle\Contract\ArkableInterface;
+use Survos\ArkBundle\Entity\ArkBinding;
 use Survos\ArkBundle\Service\NoidMinterService;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
@@ -39,12 +40,25 @@ final class ArkDoctrineListener
         }
 
         $noid = $this->minter->mint();
-        $ark = $this->minter->buildFullArk($noid);
+        $ark  = $this->minter->buildFullArk($noid);
         $entity->setArk($ark);
 
         $target = $entity->getArkTarget();
         if ($target !== '') {
             $this->minter->bind($noid, $target);
+        }
+
+        // For entities with pre-generated IDs (ULID/UUID), create an ArkBinding row
+        // in the same flush cycle. Auto-increment entities (ID not yet set) will be
+        // indexed lazily on first resolution or via ark:reindex.
+        $em   = $args->getObjectManager();
+        $meta = $em->getClassMetadata($entity::class);
+        $ids  = $meta->getIdentifierValues($entity);
+
+        if ($ids !== []) {
+            $entityClass = substr(strrchr($entity::class, '\\') ?: $entity::class, 1);
+            $binding     = new ArkBinding($ark, $entityClass, (string) reset($ids), $target !== '' ? $target : null);
+            $em->persist($binding);
         }
     }
 

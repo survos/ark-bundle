@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Survos\ArkBundle\Service;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\ObjectManager;
 use Survos\ArkBundle\Contract\ArkableInterface;
 use Survos\ArkBundle\Contract\ArkQualifiableInterface;
+use Survos\ArkBundle\Entity\ArkBinding;
+use Survos\ArkBundle\Repository\ArkBindingRepository;
 
 final class ArkRegistry
 {
@@ -15,6 +18,8 @@ final class ArkRegistry
         private readonly NoidMinterService $minter,
         private readonly string $resolverBaseUrl,
         private readonly ?ManagerRegistry $doctrine = null,
+        private readonly ?ArkBindingRepository $bindingRepository = null,
+        private readonly ?EntityManagerInterface $em = null,
     ) {}
 
     public function resolve(string $name): ?string
@@ -42,11 +47,23 @@ final class ArkRegistry
 
     private function resolveBaseName(string $name): ?string
     {
+        $ark = sprintf('ark:/%s/%s', $this->minter->getNaan(), $name);
+
+        // Primary path: ArkBinding table (single SQL query, has entity context)
+        if ($this->bindingRepository !== null) {
+            $binding = $this->bindingRepository->findByArk($ark);
+            if ($binding !== null && $binding->targetUrl !== null) {
+                return $this->normalizeUrl($binding->targetUrl);
+            }
+        }
+
+        // Legacy path: NOID db (in-process binary store, no entity context)
         $resolved = $this->minter->resolve($name);
         if ($resolved !== null) {
             return $this->normalizeUrl($resolved);
         }
 
+        // Fallback: scan all ArkableInterface entities, then lazily populate both stores
         $entity = $this->findArkableByName($name);
         if (!$entity instanceof ArkableInterface) {
             return null;
@@ -54,8 +71,27 @@ final class ArkRegistry
 
         $target = $this->normalizeUrl($entity->getArkTarget());
         $this->minter->rebind($name, $target);
+        $this->lazilyCreateBinding($ark, $entity, $target);
 
         return $target;
+    }
+
+    /** Create an ArkBinding row on first resolution of a previously unindexed entity. */
+    private function lazilyCreateBinding(string $ark, ArkableInterface $entity, string $target): void
+    {
+        if ($this->em === null || $this->bindingRepository !== null && $this->bindingRepository->findByArk($ark) !== null) {
+            return;
+        }
+
+        $ids = $this->em->getClassMetadata($entity::class)->getIdentifierValues($entity);
+        if ($ids === []) {
+            return;
+        }
+
+        $entityClass = substr(strrchr($entity::class, '\\') ?: $entity::class, 1);
+        $binding     = new ArkBinding($ark, $entityClass, (string) reset($ids), $target);
+        $this->em->persist($binding);
+        $this->em->flush();
     }
 
     private function findArkableByName(string $name): ?ArkableInterface
@@ -141,8 +177,8 @@ final class ArkRegistry
         }
 
         $meta = $manager->getClassMetadata($a::class);
-        $aId = $meta->getIdentifierValues($a);
-        $bId = $meta->getIdentifierValues($b);
+        $aId  = $meta->getIdentifierValues($a);
+        $bId  = $meta->getIdentifierValues($b);
 
         return $aId !== [] && $aId === $bId;
     }

@@ -4,7 +4,7 @@
   "type": "symfony-bundle",
   "license": "MIT",
   "require": {
-    "php": "^8.2",
+    "php": "^8.4",
     "doctrine/doctrine-bundle": "^2.13",
     "doctrine/orm": "^3.0",
     "symfony/config": "^7.0",
@@ -13,10 +13,19 @@
     "symfony/http-foundation": "^7.0",
     "symfony/http-kernel": "^7.0",
     "symfony/routing": "^7.0",
+    "symfony/uid": "^7.0",
     "daniel-km/noid": "^1.4"
   },
   "require-dev": {
-    "phpstan/phpstan": "^2.1"
+    "api-platform/core": "^4.0",
+    "phpstan/phpstan": "^2.1",
+    "survos/field-bundle": "*",
+    "survos/jsonl-bundle": "^2.0"
+  },
+  "suggest": {
+    "api-platform/core": "Exposes ArkBinding as an ApiResource with collection/item endpoints.",
+    "survos/field-bundle": "Registers ArkBinding in the admin navbar via #[EntityMeta].",
+    "survos/jsonl-bundle": "Enables ark:export --output and ark:import --input with .jsonl/.jsonl.gz files."
   },
   "autoload": {
     "psr-4": {

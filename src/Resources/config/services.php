@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Survos\ArkBundle\Command\ArkExportCommand;
+use Survos\ArkBundle\Command\ArkImportCommand;
 use Survos\ArkBundle\Command\BindCommand;
 use Survos\ArkBundle\Command\BulkMintCommand;
 use Survos\ArkBundle\Command\MintCommand;
@@ -11,6 +13,7 @@ use Survos\ArkBundle\Command\ResolveCommand;
 use Survos\ArkBundle\Command\ValidateCommand;
 use Survos\ArkBundle\Controller\ArkRedirectController;
 use Survos\ArkBundle\Doctrine\ArkDoctrineListener;
+use Survos\ArkBundle\Repository\ArkBindingRepository;
 use Survos\ArkBundle\Service\ArkRegistry;
 use Survos\ArkBundle\Service\NoidMinterService;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -33,6 +36,8 @@ return static function (ContainerConfigurator $container): void {
                 service('survos_ark.minter'),
                 '%survos_ark.resolver_base_url%',
                 service('doctrine')->ignoreOnInvalid(),
+                service(ArkBindingRepository::class)->ignoreOnInvalid(),
+                service('doctrine.orm.entity_manager')->ignoreOnInvalid(),
             ])
 
         ->set('survos_ark.doctrine_listener', ArkDoctrineListener::class)
@@ -84,6 +89,14 @@ return static function (ContainerConfigurator $container): void {
                 service('survos_ark.minter'),
                 service('doctrine')->ignoreOnInvalid(),
             ])
+            ->tag('console.command')
+
+        ->set(ArkExportCommand::class)
+            ->args([service(ArkBindingRepository::class)->ignoreOnInvalid()])
+            ->tag('console.command')
+
+        ->set(ArkImportCommand::class)
+            ->args([service('doctrine.orm.entity_manager')->ignoreOnInvalid()])
             ->tag('console.command')
     ;
 };
