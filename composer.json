@@ -1,43 +1,50 @@
 {
-  "name": "survos/ark-bundle",
-  "description": "Symfony bundle for ARK identifier minting and resolution",
-  "type": "symfony-bundle",
-  "license": "MIT",
-  "require": {
-    "php": "^8.4",
-    "doctrine/doctrine-bundle": "^2.13",
-    "doctrine/orm": "^3.0",
-    "symfony/config": "^7.0",
-    "symfony/console": "^7.0",
-    "symfony/dependency-injection": "^7.0",
-    "symfony/http-foundation": "^7.0",
-    "symfony/http-kernel": "^7.0",
-    "symfony/routing": "^7.0",
-    "symfony/uid": "^7.0",
-    "daniel-km/noid": "^1.4"
-  },
-  "require-dev": {
-    "api-platform/core": "^4.0",
-    "phpstan/phpstan": "^2.1",
-    "survos/field-bundle": "*",
-    "survos/jsonl-bundle": "^2.0"
-  },
-  "suggest": {
-    "api-platform/core": "Exposes ArkBinding as an ApiResource with collection/item endpoints.",
-    "survos/field-bundle": "Registers ArkBinding in the admin navbar via #[EntityMeta].",
-    "survos/jsonl-bundle": "Enables ark:export --output and ark:import --input with .jsonl/.jsonl.gz files."
-  },
-  "autoload": {
-    "psr-4": {
-      "Survos\\ArkBundle\\": "src/"
+    "name": "survos/ark-bundle",
+    "description": "Symfony bundle for ARK identifier minting and resolution",
+    "type": "symfony-bundle",
+    "license": "MIT",
+    "keywords": ["symfony", "ark", "identifier", "noid", "resolver", "archival"],
+    "autoload": {
+        "psr-4": {
+            "Survos\\ArkBundle\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Survos\\ArkBundle\\Tests\\": "tests/"
+        }
+    },
+    "require": {
+        "php": "^8.4",
+        "doctrine/orm": "^3.3",
+        "doctrine/doctrine-bundle": "^3.2",
+        "doctrine/dbal": "^3.9||^4.2",
+        "symfony/config": "^8.0",
+        "symfony/console": "^8.0",
+        "symfony/dependency-injection": "^8.0",
+        "symfony/framework-bundle": "^8.0",
+        "symfony/http-foundation": "^8.0",
+        "symfony/http-kernel": "^8.0",
+        "symfony/routing": "^8.0",
+        "symfony/uid": "^8.0",
+        "daniel-km/noid": "^1.4"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^13.0|^14.0",
+        "api-platform/core": "^4.0",
+        "phpstan/phpstan": "^2.1"
+    },
+    "suggest": {
+        "api-platform/core": "Exposes ArkBinding as an ApiResource with collection/item endpoints.",
+        "survos/field-bundle": "Registers ArkBinding in the admin navbar via #[EntityMeta].",
+        "survos/jsonl-bundle": "Enables ark:export --output and ark:import --input with .jsonl/.jsonl.gz files."
+    },
+    "scripts": {
+        "phpstan": "vendor/bin/phpstan analyse"
+    },
+    "extra": {
+        "symfony": {
+            "require": "^8.0"
+        }
     }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "Survos\\ArkBundle\\Tests\\": "tests/"
-    }
-  },
-  "scripts": {
-    "phpstan": "vendor/bin/phpstan analyse"
-  }
 }
