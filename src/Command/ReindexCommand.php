@@ -4,71 +4,63 @@ declare(strict_types=1);
 
 namespace Survos\ArkBundle\Command;
 
-use Doctrine\Persistence\ManagerRegistry;
-use Survos\ArkBundle\Contract\ArkableInterface;
+use Survos\ArkBundle\Entity\ArkBinding;
+use Survos\ArkBundle\Repository\ArkBindingRepository;
 use Survos\ArkBundle\Service\NoidMinterService;
 use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Attribute\Option;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(name: 'ark:reindex', description: 'Reindex ARK bindings from entities.')]
-final class ReindexCommand extends Command
+#[AsCommand(name: 'ark:reindex', description: 'Rebuild the NOID database from the ark_binding table.')]
+final class ReindexCommand
 {
     public function __construct(
         private readonly NoidMinterService $minter,
-        private readonly ?ManagerRegistry $doctrine = null,
-    ) {
-        parent::__construct();
-    }
+        private readonly ?ArkBindingRepository $bindings = null,
+    ) {}
 
-    protected function configure(): void
-    {
-        $this->addOption('dry-run', null, InputOption::VALUE_NONE, 'Preview changes only');
-    }
-
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
-        if ($this->doctrine === null) {
-            $output->writeln('Doctrine is not available.');
+    public function __invoke(
+        SymfonyStyle $io,
+        #[Option('Preview changes without writing to the NOID database.')]
+        bool $dryRun = false,
+    ): int {
+        if ($this->bindings === null) {
+            $io->error('ArkBindingRepository is not available — is Doctrine configured?');
 
             return Command::FAILURE;
         }
 
-        $dryRun = (bool) $input->getOption('dry-run');
-        $count = 0;
+        $count   = 0;
+        $skipped = 0;
 
-        foreach ($this->doctrine->getManagers() as $manager) {
-            $meta = $manager->getMetadataFactory()->getAllMetadata();
-            foreach ($meta as $classMetadata) {
-                $className = $classMetadata->getName();
-                if (!is_a($className, ArkableInterface::class, true)) {
-                    continue;
-                }
+        foreach ($this->bindings->iterateForExport() as $binding) {
+            \assert($binding instanceof ArkBinding);
 
-                $entities = $manager->getRepository($className)->findAll();
-                foreach ($entities as $entity) {
-                    $ark = $entity->getArk();
-                    if ($ark === null) {
-                        continue;
-                    }
-
-                    $name = $this->minter->extractNoid($ark);
-                    if ($name === null) {
-                        continue;
-                    }
-
-                    if (!$dryRun) {
-                        $this->minter->rebind($name, $entity->getArkTarget());
-                    }
-
-                    ++$count;
-                }
+            if ($binding->targetUrl === null) {
+                ++$skipped;
+                continue;
             }
+
+            $name = $this->minter->extractNoid($binding->ark);
+            if ($name === null) {
+                ++$skipped;
+                continue;
+            }
+
+            if (!$dryRun) {
+                $this->minter->rebind($name, $binding->targetUrl);
+            }
+
+            ++$count;
         }
 
-        $output->writeln(sprintf('Reindexed %d ARKs.', $count));
+        $io->success(sprintf(
+            '%s %d binding(s)%s.',
+            $dryRun ? 'Would reindex' : 'Reindexed',
+            $count,
+            $skipped > 0 ? sprintf(' (%d skipped — no target URL)', $skipped) : '',
+        ));
 
         return Command::SUCCESS;
     }

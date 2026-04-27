@@ -16,7 +16,7 @@ final class ArkRegistry
 {
     public function __construct(
         private readonly NoidMinterService $minter,
-        private readonly string $resolverBaseUrl,
+        private readonly ?string $resolverBaseUrl,
         private readonly ?ManagerRegistry $doctrine = null,
         private readonly ?ArkBindingRepository $bindingRepository = null,
         private readonly ?EntityManagerInterface $em = null,
@@ -189,6 +189,8 @@ final class ArkRegistry
             return $url;
         }
 
-        return rtrim($this->resolverBaseUrl, '/') . '/' . ltrim($url, '/');
+        $base = $this->resolverBaseUrl ?? throw new \LogicException('survos_ark.resolver_base_url is not configured. Add "resolver_base_url: https://your-domain.org" to config/packages/survos_ark.yaml.');
+
+        return rtrim($base, '/') . '/' . ltrim($url, '/');
     }
 }

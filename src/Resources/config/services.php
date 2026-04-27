@@ -87,7 +87,7 @@ return static function (ContainerConfigurator $container): void {
         ->set(ReindexCommand::class)
             ->args([
                 service('survos_ark.minter'),
-                service('doctrine')->ignoreOnInvalid(),
+                service(ArkBindingRepository::class)->ignoreOnInvalid(),
             ])
             ->tag('console.command')
 

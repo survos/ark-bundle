@@ -13,12 +13,17 @@ final class NoidMinterService
     private ?string $noidHandle = null;
 
     public function __construct(
-        private readonly string $naan,
+        private readonly ?string $naan,
         private readonly string $shoulder,
         private readonly string $template,
         private readonly string $dbType,
         private readonly string $dbPath,
     ) {}
+
+    private function requireNaan(): string
+    {
+        return $this->requireNaan() ?? throw new \LogicException('survos_ark.naan is not configured. Add "naan: YOUR_NAAN" to config/packages/survos_ark.yaml.');
+    }
 
     public function mint(): string
     {
@@ -30,12 +35,12 @@ final class NoidMinterService
 
     public function buildFullArk(string $name): string
     {
-        return sprintf('ark:/%s/%s', $this->naan, $name);
+        return sprintf('ark:/%s/%s', $this->requireNaan(), $name);
     }
 
     public function getNaan(): string
     {
-        return $this->naan;
+        return $this->requireNaan();
     }
 
     public function bind(string $name, string $url): void
@@ -92,7 +97,7 @@ final class NoidMinterService
 
     public function extractNoid(string $ark): ?string
     {
-        $prefix = sprintf('ark:/%s/', $this->naan);
+        $prefix = sprintf('ark:/%s/', $this->requireNaan());
         if (!str_starts_with($ark, $prefix)) {
             return null;
         }
@@ -128,7 +133,7 @@ final class NoidMinterService
             $this->contact(),
             $this->template,
             'long',
-            $this->naan,
+            $this->requireNaan(),
             'Survos',
             $this->shoulder !== '' ? $this->shoulder : 'ark',
         );
@@ -168,12 +173,12 @@ final class NoidMinterService
 
     private function toNoidId(string $name): string
     {
-        return sprintf('%s/%s', $this->naan, $name);
+        return sprintf('%s/%s', $this->requireNaan(), $name);
     }
 
     private function extractNameFromNoidId(string $id): string
     {
-        $prefix = $this->naan . '/';
+        $prefix = $this->requireNaan() . '/';
         if (str_starts_with($id, $prefix)) {
             return substr($id, strlen($prefix));
         }
