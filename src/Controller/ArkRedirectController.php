@@ -8,6 +8,7 @@ use Survos\ArkBundle\Service\ArkRegistry;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
 
 final class ArkRedirectController
 {
@@ -17,6 +18,7 @@ final class ArkRedirectController
         private readonly bool $n2tResolve,
     ) {}
 
+    #[Route('/{naan}/{name}', name: 'survos_ark_resolve', requirements: ['name' => '.+'], methods: ['GET'])]
     public function __invoke(Request $request, string $naan, string $name): Response
     {
         if ($naan !== $this->naan) {
@@ -48,6 +50,7 @@ final class ArkRedirectController
         return new RedirectResponse($url, Response::HTTP_MOVED_PERMANENTLY);
     }
 
+    #[Route('/{naan}/_probe', name: 'survos_ark_probe', methods: ['GET'])]
     public function probe(string $naan): Response
     {
         if ($naan !== $this->naan) {

@@ -11,11 +11,9 @@ use Doctrine\ORM\Events;
 use Survos\ArkBundle\Contract\ArkableInterface;
 use Survos\ArkBundle\Entity\ArkBinding;
 use Survos\ArkBundle\Service\NoidMinterService;
-use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 #[AsDoctrineListener(event: Events::prePersist)]
 #[AsDoctrineListener(event: Events::preUpdate)]
-#[AutoconfigureTag('doctrine.event_listener')]
 final class ArkDoctrineListener
 {
     public function __construct(
