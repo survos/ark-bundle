@@ -8,7 +8,9 @@ use Survos\ArkBundle\Controller\ArkRedirectController;
 use Survos\ArkBundle\Doctrine\ArkDoctrineListener;
 use Survos\ArkBundle\Repository\ArkBindingRepository;
 use Survos\ArkBundle\Service\ArkRegistry;
+use Survos\ArkBundle\Service\ArkUlidCodec;
 use Survos\ArkBundle\Service\NoidMinterService;
+use Survos\ArkBundle\Twig\ArkTwigRuntime;
 use Survos\CoreBundle\Traits\HasConfigurableRoutes;
 use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -89,6 +91,17 @@ final class SurvosArkBundle extends AbstractBundle
                 service('doctrine.orm.entity_manager')->ignoreOnInvalid(),
             ]);
         $services->alias('survos_ark.registry', ArkRegistry::class);
+
+        $services->set(ArkUlidCodec::class)
+            ->args([
+                '%survos_ark.naan%',
+                '%survos_ark.resolver_base_url%',
+                '%survos_ark.local_path%',
+            ]);
+        $services->alias('survos_ark.ulid_codec', ArkUlidCodec::class);
+
+        $services->set(ArkTwigRuntime::class)
+            ->args([service(ArkUlidCodec::class)]);
 
         // #[AsDoctrineListener(event: ...)] on the class registers the events
         // automatically — autoconfigure picks them up. No explicit tag needed.

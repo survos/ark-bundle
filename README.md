@@ -8,6 +8,7 @@ Requires PHP 8.4+ and Symfony 8.
 
 - Mints opaque ARK identifiers via the NOID algorithm (`daniel-km/noid`)
 - Stores bindings in a Doctrine `ark_binding` pivot table (one SQL lookup to resolve any ARK)
+- Derives deterministic 22-character ARK names from ULIDs
 - Auto-mints on `prePersist` for entities implementing `ArkableInterface`
 - Redirects `GET /ark/{naan}/{name}` → entity's target URL (301)
 - Serves ERC metadata via `?info` query parameter
@@ -105,6 +106,35 @@ class Item implements ArkableInterface
 An ARK is minted automatically on first `persist()`. For entities with pre-generated
 IDs (ULID/UUID), an `ArkBinding` row is also created in the same flush cycle.
 Auto-increment entities are indexed lazily on first resolution or via `ark:reindex`.
+
+## ULID ARKs
+
+`ArkUlidCodec` converts a ULID to a fixed 22-character URL-safe name and back.
+It uses a base58 alphabet that avoids `0`, `O`, `1`, `I`, and `l`; a true
+base64url alphabet cannot avoid those characters.
+
+```php
+$name = $codec->name($ulid);
+$ark = $codec->ark($ulid);
+$url = $codec->url($ulid);
+$ulid = $codec->ulid($name);
+```
+
+The existing route `GET /ark/{naan}/{name}` matches these names, so an app can
+decode the `{name}` segment and resolve it without storing the ARK separately.
+For QR codes, encode the resolver URL:
+
+```twig
+{{ ark_ulid_url(item.id) }}
+```
+
+Twig functions:
+
+| Function | Description |
+|---|---|
+| `ark_ulid_name(ulid)` | Deterministic 22-character name |
+| `ark_ulid_url(ulid)` | Resolver URL for QR codes |
+| `ark_ulid(name)` | Decode the name back to a canonical ULID string |
 
 ## Resolution order
 
