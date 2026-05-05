@@ -61,6 +61,11 @@ final class ArkUlidCodec
             : rtrim($this->resolverBaseUrl, '/') . $path;
     }
 
+    public function n2tUrl(Ulid|string $ulid): string
+    {
+        return sprintf('https://n2t.net/ark:/%s/%s', $this->requireNaan(), $this->name($ulid));
+    }
+
     public function ulid(string $name): Ulid
     {
         if (strlen($name) !== self::LENGTH) {

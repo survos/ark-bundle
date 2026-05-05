@@ -26,6 +26,12 @@ final class ArkTwigRuntime
         return $this->codec->url($ulid);
     }
 
+    #[AsTwigFunction('ark_ulid_n2t_url')]
+    public function n2tUrl(Ulid|string $ulid): string
+    {
+        return $this->codec->n2tUrl($ulid);
+    }
+
     #[AsTwigFunction('ark_ulid')]
     public function ulid(string $name): string
     {

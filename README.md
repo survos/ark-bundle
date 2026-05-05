@@ -117,15 +117,18 @@ base64url alphabet cannot avoid those characters.
 $name = $codec->name($ulid);
 $ark = $codec->ark($ulid);
 $url = $codec->url($ulid);
+$n2tUrl = $codec->n2tUrl($ulid);
 $ulid = $codec->ulid($name);
 ```
 
 The existing route `GET /ark/{naan}/{name}` matches these names, so an app can
 decode the `{name}` segment and resolve it without storing the ARK separately.
-For QR codes, encode the resolver URL:
+For QR codes and public links, encode the N2T URL. N2T resolves
+`https://n2t.net/ark:/12345/{name}` to the configured resolver URL,
+for example `https://your-domain.org/ark/12345/{name}`:
 
 ```twig
-{{ ark_ulid_url(item.id) }}
+{{ ark_ulid_n2t_url(item.id) }}
 ```
 
 Twig functions:
@@ -133,7 +136,8 @@ Twig functions:
 | Function | Description |
 |---|---|
 | `ark_ulid_name(ulid)` | Deterministic 22-character name |
-| `ark_ulid_url(ulid)` | Resolver URL for QR codes |
+| `ark_ulid_url(ulid)` | Local resolver URL |
+| `ark_ulid_n2t_url(ulid)` | Public N2T ARK URL for QR codes |
 | `ark_ulid(name)` | Decode the name back to a canonical ULID string |
 
 ## Resolution order
