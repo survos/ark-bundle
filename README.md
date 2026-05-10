@@ -192,3 +192,33 @@ under the **ARK** group.
 The NOID file is semi-ephemeral: if lost, run `ark:reindex` to repopulate it from
 the `ark_binding` table. Available backends: `sqlite` (default), `mysql`, `pdo`,
 `bdb` (BerkeleyDB), `lmdb`, `xml`.
+
+## ULID compression
+
+A ULID is 128 bits. Its canonical Crockford Base32 form is 26 characters; the same bytes can be represented more compactly:
+
+| Format | Length | Notes |
+|---|---|---|
+| Binary | 16 bytes | Storage (Postgres `uuid`, `BINARY(16)`) |
+| Base64url | 22 chars | Shortest sensible ASCII form |
+| Base58 | 22 chars | No ambiguous chars |
+| Base32 (Crockford) | 26 chars | Canonical, case-insensitive, sortable |
+| RFC 4122 UUID | 36 chars | Interop with UUID tooling |
+
+### Round-trip with `symfony/uid`
+
+```php
+use Symfony\Component\Uid\Ulid;
+
+$ulid  = new Ulid('01ARZ3NDEKTSV4RRFFQ69G5FAV');
+$short = $ulid->toBase64();          // 22 chars, URL-safe
+$back  = Ulid::fromBase64($short);   // round-trips
+```
+
+### Recommendation
+
+- **Database**: 16-byte binary (`uuid` column).
+- **URLs / compact tokens**: Base64url, 22 chars.
+- **ARK identifiers / human-transcribable IDs**: keep the 26-char Crockford Base32 — case-insensitive, no `0/O` or `1/I/l` confusion, lexicographically sortable. The 4 saved characters aren't worth losing those properties.
+
+22 chars is the practical floor for ASCII. Base85 reaches 20 but includes characters (`"`, `'`, `\`) that are awkward in URLs and JSON.
