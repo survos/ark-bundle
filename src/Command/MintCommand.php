@@ -5,46 +5,38 @@ declare(strict_types=1);
 namespace Survos\ArkBundle\Command;
 
 use Survos\ArkBundle\Service\NoidMinterService;
+use Symfony\Component\Console\Attribute\Argument;
 use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Attribute\Option;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(name: 'ark:mint', description: 'Mint one or more ARK identifiers.')]
-final class MintCommand extends Command
+#[AsCommand('ark:mint', 'Mint one or more ARK identifiers.')]
+final class MintCommand
 {
     public function __construct(private readonly NoidMinterService $minter)
     {
-        parent::__construct();
     }
 
-    protected function configure(): void
-    {
-        $this
-            ->addArgument('count', InputArgument::OPTIONAL, 'Number of ARKs to mint', 1)
-            ->addOption('output', null, InputOption::VALUE_REQUIRED, 'Output format (text|json)', 'text');
-    }
-
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
-        $count = max(1, (int) $input->getArgument('count'));
+    public function __invoke(
+        SymfonyStyle $io,
+        #[Argument('Number of ARKs to mint')] int $count = 1,
+        #[Option('Output format (text|json)')] string $output = 'text',
+    ): int {
+        $count = max(1, $count);
         $arks = [];
         for ($i = 0; $i < $count; ++$i) {
             $name = $this->minter->mint();
             $arks[] = $this->minter->buildFullArk($name);
         }
 
-        $format = strtolower((string) $input->getOption('output'));
-        if ($format === 'json') {
-            $output->writeln((string) json_encode($arks, JSON_PRETTY_PRINT));
-
+        if (strtolower($output) === 'json') {
+            $io->writeln((string) json_encode($arks, JSON_PRETTY_PRINT));
             return Command::SUCCESS;
         }
 
         foreach ($arks as $ark) {
-            $output->writeln($ark);
+            $io->writeln($ark);
         }
 
         return Command::SUCCESS;

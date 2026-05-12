@@ -5,31 +5,25 @@ declare(strict_types=1);
 namespace Survos\ArkBundle\Command;
 
 use Survos\ArkBundle\Service\NoidMinterService;
+use Symfony\Component\Console\Attribute\Argument;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(name: 'ark:validate', description: 'Validate an ARK name segment.')]
-final class ValidateCommand extends Command
+#[AsCommand('ark:validate', 'Validate an ARK name segment.')]
+final class ValidateCommand
 {
     public function __construct(private readonly NoidMinterService $minter)
     {
-        parent::__construct();
     }
 
-    protected function configure(): void
-    {
-        $this->addArgument('name', InputArgument::REQUIRED, 'ARK name segment');
-    }
-
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
-        $name = (string) $input->getArgument('name');
+    public function __invoke(
+        SymfonyStyle $io,
+        #[Argument('ARK name segment')] string $name,
+    ): int {
         $valid = $this->minter->validate($name);
 
-        $output->writeln($valid ? 'valid' : 'invalid');
+        $io->writeln($valid ? 'valid' : 'invalid');
 
         return $valid ? Command::SUCCESS : Command::FAILURE;
     }

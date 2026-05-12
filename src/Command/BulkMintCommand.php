@@ -8,35 +8,28 @@ use Doctrine\Persistence\ManagerRegistry;
 use Survos\ArkBundle\Contract\ArkableInterface;
 use Survos\ArkBundle\Service\NoidMinterService;
 use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Attribute\Option;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(name: 'ark:bulk-mint', description: 'Mint ARKs for all unminted arkable entities.')]
-final class BulkMintCommand extends Command
+#[AsCommand('ark:bulk-mint', 'Mint ARKs for all unminted arkable entities.')]
+final class BulkMintCommand
 {
     public function __construct(
         private readonly NoidMinterService $minter,
         private readonly ?ManagerRegistry $doctrine = null,
     ) {
-        parent::__construct();
     }
 
-    protected function configure(): void
-    {
-        $this->addOption('dry-run', null, InputOption::VALUE_NONE, 'Preview changes only');
-    }
-
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    public function __invoke(
+        SymfonyStyle $io,
+        #[Option('Preview changes only')] bool $dryRun = false,
+    ): int {
         if ($this->doctrine === null) {
-            $output->writeln('Doctrine is not available.');
-
+            $io->writeln('Doctrine is not available.');
             return Command::FAILURE;
         }
 
-        $dryRun = (bool) $input->getOption('dry-run');
         $minted = 0;
 
         foreach ($this->doctrine->getManagers() as $manager) {
@@ -65,7 +58,7 @@ final class BulkMintCommand extends Command
             }
         }
 
-        $output->writeln(sprintf('Minted %d ARKs.', $minted));
+        $io->writeln(sprintf('Minted %d ARKs.', $minted));
 
         return Command::SUCCESS;
     }

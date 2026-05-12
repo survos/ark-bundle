@@ -8,25 +8,19 @@ use Doctrine\Persistence\ManagerRegistry;
 use Survos\ArkBundle\Contract\ArkableInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(name: 'ark:report', description: 'Show ARK status report.')]
-final class ReportCommand extends Command
+#[AsCommand('ark:report', 'Show ARK status report.')]
+final class ReportCommand
 {
     public function __construct(private readonly ?ManagerRegistry $doctrine = null)
     {
-        parent::__construct();
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    public function __invoke(SymfonyStyle $io): int
     {
-        $io = new SymfonyStyle($input, $output);
-
         if ($this->doctrine === null) {
             $io->error('Doctrine is not available.');
-
             return Command::FAILURE;
         }
 
