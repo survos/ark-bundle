@@ -36,10 +36,10 @@
         "symfony/uid": "^8.0",
         "daniel-km/noid": "^1.4",
         "twig/twig": "^3.21",
-        "survos/kit-bundle": "^2.0"
+        "survos/kit-bundle": "^2.5"
     },
     "require-dev": {
-        "phpunit/phpunit": "^13.0|^14.0",
+        "phpunit/phpunit": "^13.0",
         "api-platform/core": "^4.0",
         "phpstan/phpstan": "^2.1"
     },
