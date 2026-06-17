@@ -19,6 +19,7 @@ use Survos\Kit\AbstractSurvosBundle;
 
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
+// Symfony\Component\HttpKernel\Bundle\Bundle <-- Flex auto-registration marker (see Survos\Kit\AbstractSurvosBundle)
 final class SurvosArkBundle extends AbstractSurvosBundle
 {
     use HasConfigurableRoutes;
