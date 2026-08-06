@@ -35,7 +35,7 @@
         "symfony/routing": "^8.1",
         "symfony/uid": "^8.1",
         "daniel-km/noid": "^1.4",
-        "twig/twig": "^3.21",
+        "twig/twig": "^3.21|^4.0",
         "survos/kit-bundle": "^2.5"
     },
     "require-dev": {
