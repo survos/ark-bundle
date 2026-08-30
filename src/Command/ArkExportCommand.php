@@ -19,8 +19,14 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 final class ArkExportCommand
 {
+    // Nullable because SurvosArkBundle registers this argument with
+    // ignoreOnInvalid(), so that the bundle stays installable in an app that
+    // does not map its entities. ignoreOnInvalid() injects NULL, so a
+    // non-nullable type here is an invalid service definition by construction --
+    // `lint:container` rejects it, and it would TypeError at runtime. The guard
+    // in __invoke() turns that into a usable message instead.
     public function __construct(
-        private readonly ArkBindingRepository $bindings,
+        private readonly ?ArkBindingRepository $bindings = null,
     ) {}
 
     public function __invoke(
@@ -30,6 +36,23 @@ final class ArkExportCommand
         #[Option('Write to a .jsonl or .jsonl.gz file instead of stdout.')]
         ?string $output = null,
     ): int {
+        if (null === $this->bindings) {
+            $io->error(
+                "ArkBundle entities are not mapped in this application, so export is unavailable.\n\n"
+                . "Add the bundle's entities to config/packages/doctrine.yaml:\n\n"
+                . "    doctrine:\n"
+                . "        orm:\n"
+                . "            mappings:\n"
+                . "                SurvosArkBundle:\n"
+                . "                    type: attribute\n"
+                . "                    dir: '%kernel.project_dir%/vendor/survos/ark-bundle/src/Entity'\n"
+                . "                    prefix: 'Survos\\ArkBundle\\Entity'\n"
+                . "                    is_bundle: false"
+            );
+
+            return Command::FAILURE;
+        }
+
         if ($output !== null && !class_exists(JsonlWriter::class)) {
             $io->error("jsonl-bundle is not installed.\n\ncomposer req survos/jsonl-bundle");
 

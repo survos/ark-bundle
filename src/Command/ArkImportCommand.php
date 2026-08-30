@@ -18,8 +18,13 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 final class ArkImportCommand
 {
+    // Nullable for the same reason as ArkExportCommand: the bundle registers
+    // this with ignoreOnInvalid() so it stays installable without Doctrine.
+    // Latent rather than currently failing -- an app with Doctrine but no Ark
+    // mapping still resolves the entity manager -- but the definition is wrong
+    // in exactly the same way for an app with no Doctrine at all.
     public function __construct(
-        private readonly EntityManagerInterface $em,
+        private readonly ?EntityManagerInterface $em = null,
     ) {}
 
     public function __invoke(
@@ -31,6 +36,23 @@ final class ArkImportCommand
         #[Option('Skip rows whose id already exists in the database.')]
         bool $skipExisting = true,
     ): int {
+        if (null === $this->em) {
+            $io->error(
+                "ArkBundle entities are not mapped in this application, so import is unavailable.\n\n"
+                . "Add the bundle's entities to config/packages/doctrine.yaml:\n\n"
+                . "    doctrine:\n"
+                . "        orm:\n"
+                . "            mappings:\n"
+                . "                SurvosArkBundle:\n"
+                . "                    type: attribute\n"
+                . "                    dir: '%kernel.project_dir%/vendor/survos/ark-bundle/src/Entity'\n"
+                . "                    prefix: 'Survos\\ArkBundle\\Entity'\n"
+                . "                    is_bundle: false"
+            );
+
+            return Command::FAILURE;
+        }
+
         if ($input !== null && !class_exists(JsonlReader::class)) {
             $io->error("jsonl-bundle is not installed.\n\ncomposer req survos/jsonl-bundle");
 
