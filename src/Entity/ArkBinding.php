@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Survos\ArkBundle\Entity;
 
-use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SortFilter;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\QueryParameter;
+use ApiPlatform\Doctrine\Orm\Filter\ExactFilter;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use Doctrine\DBAL\Types\Types;
@@ -31,16 +31,15 @@ use Symfony\Component\Uid\Ulid;
 #[ApiResource(
     operations: [
         new Get(uriTemplate: '/ark-bindings/{id}'),
-        new GetCollection(uriTemplate: '/ark-bindings'),
+        new GetCollection(uriTemplate: '/ark-bindings', parameters: [
+            'entityClass' => new QueryParameter(filter: new ExactFilter(), property: 'entityClass'),
+            'entityId' => new QueryParameter(filter: new ExactFilter(), property: 'entityId'),
+            'ark' => new QueryParameter(filter: new ExactFilter(), property: 'ark'),
+            'order[:property]' => new QueryParameter(filter: new SortFilter(), properties: ['createdAt', 'ark', 'entityClass']),
+        ]),
     ],
     normalizationContext: ['groups' => ['ark_binding:read']],
 )]
-#[ApiFilter(SearchFilter::class, properties: [
-    'entityClass' => 'exact',
-    'entityId'    => 'exact',
-    'ark'         => 'exact',
-])]
-#[ApiFilter(OrderFilter::class, properties: ['createdAt', 'ark', 'entityClass'])]
 class ArkBinding
 {
     #[ORM\Id]
