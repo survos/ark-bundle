@@ -23,7 +23,7 @@
     },
     "require": {
         "php": "^8.5",
-        "doctrine/orm": "^3.3",
+        "doctrine/orm": "^3.7",
         "doctrine/doctrine-bundle": "^3.2",
         "doctrine/dbal": "^3.9||^4.2",
         "symfony/config": "^8.1",
