@@ -30,8 +30,9 @@ final class MintCommand
             $arks[] = $this->minter->buildFullArk($name);
         }
 
-        if (strtolower($output) === 'json') {
+        if ('json' === strtolower($output)) {
             $io->writeln((string) json_encode($arks, JSON_PRETTY_PRINT));
+
             return Command::SUCCESS;
         }
 

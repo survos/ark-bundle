@@ -23,8 +23,9 @@ final class ResolveCommand
     ): int {
         $resolved = $this->minter->resolve($name);
 
-        if ($resolved === null) {
+        if (null === $resolved) {
             $io->writeln('Not found.');
+
             return Command::FAILURE;
         }
 

@@ -27,7 +27,8 @@ final class ArkExportCommand
     // in __invoke() turns that into a usable message instead.
     public function __construct(
         private readonly ?ArkBindingRepository $bindings = null,
-    ) {}
+    ) {
+    }
 
     public function __invoke(
         SymfonyStyle $io,
@@ -39,28 +40,28 @@ final class ArkExportCommand
         if (null === $this->bindings) {
             $io->error(
                 "ArkBundle entities are not mapped in this application, so export is unavailable.\n\n"
-                . "Add the bundle's entities to config/packages/doctrine.yaml:\n\n"
-                . "    doctrine:\n"
-                . "        orm:\n"
-                . "            mappings:\n"
-                . "                SurvosArkBundle:\n"
-                . "                    type: attribute\n"
-                . "                    dir: '%kernel.project_dir%/vendor/survos/ark-bundle/src/Entity'\n"
-                . "                    prefix: 'Survos\\ArkBundle\\Entity'\n"
-                . "                    is_bundle: false"
+                ."Add the bundle's entities to config/packages/doctrine.yaml:\n\n"
+                ."    doctrine:\n"
+                ."        orm:\n"
+                ."            mappings:\n"
+                ."                SurvosArkBundle:\n"
+                ."                    type: attribute\n"
+                ."                    dir: '%kernel.project_dir%/vendor/survos/ark-bundle/src/Entity'\n"
+                ."                    prefix: 'Survos\\ArkBundle\\Entity'\n"
+                .'                    is_bundle: false'
             );
 
             return Command::FAILURE;
         }
 
-        if ($output !== null && !class_exists(JsonlWriter::class)) {
+        if (null !== $output && !class_exists(JsonlWriter::class)) {
             $io->error("jsonl-bundle is not installed.\n\ncomposer req survos/jsonl-bundle");
 
             return Command::FAILURE;
         }
 
-        $count     = 0;
-        $writer    = $output !== null ? JsonlWriter::open($output) : null;
+        $count = 0;
+        $writer = null !== $output ? JsonlWriter::open($output) : null;
         $completed = false;
 
         try {
@@ -69,14 +70,14 @@ final class ArkExportCommand
 
                 $row = $binding->toArray();
 
-                if ($writer !== null) {
+                if (null !== $writer) {
                     $writer->write($row);
                 } else {
                     $json = \json_encode($row, \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE);
-                    if ($json === false) {
+                    if (false === $json) {
                         throw new \RuntimeException(sprintf('Failed to encode binding %s.', $row['id'] ?? '[unknown]'));
                     }
-                    fwrite(\STDOUT, $json . "\n");
+                    fwrite(\STDOUT, $json."\n");
                 }
 
                 ++$count;
@@ -84,12 +85,12 @@ final class ArkExportCommand
 
             $completed = true;
         } finally {
-            if ($writer !== null) {
+            if (null !== $writer) {
                 $completed ? $writer->finish() : $writer->close();
             }
         }
 
-        if ($output !== null) {
+        if (null !== $output) {
             $io->success(sprintf('Exported %d binding(s) to %s.', $count, $output));
         } else {
             $io->writeln(sprintf('Exported %d binding(s).', $count), OutputInterface::VERBOSITY_VERBOSE);

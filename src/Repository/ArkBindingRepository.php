@@ -30,7 +30,7 @@ class ArkBindingRepository extends ServiceEntityRepository
             ->orderBy('b.createdAt', 'ASC')
             ->addOrderBy('b.id', 'ASC');
 
-        if ($entityClass !== null) {
+        if (null !== $entityClass) {
             $qb->andWhere('b.entityClass = :entityClass')
                ->setParameter('entityClass', $entityClass);
         }

@@ -19,6 +19,7 @@ trait ArkableTrait
     public function setArk(string $ark): static
     {
         $this->ark = $ark;
+
         return $this;
     }
 }

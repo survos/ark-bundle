@@ -11,11 +11,11 @@ use Survos\ArkBundle\Service\ArkRegistry;
 use Survos\ArkBundle\Service\ArkUlidCodec;
 use Survos\ArkBundle\Service\NoidMinterService;
 use Survos\ArkBundle\Twig\ArkTwigRuntime;
+use Survos\Kit\AbstractSurvosBundle;
 use Survos\Kit\Traits\HasConfigurableRoutes;
 use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
-use Survos\Kit\AbstractSurvosBundle;
 
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
@@ -41,9 +41,6 @@ final class SurvosArkBundle extends AbstractSurvosBundle
         ->end();
     }
 
-    /**
-     * @param array<string, mixed> $config
-     */
     public function build(ContainerBuilder $container): void
     {
         parent::build($container);
@@ -124,16 +121,16 @@ final class SurvosArkBundle extends AbstractSurvosBundle
         // Auto-register every command in src/Command/. autoconfigure adds the
         // console.command tag from #[AsCommand]; autowire fills constructor args
         // from the FQCN-keyed services registered above.
-        $services->load('Survos\\ArkBundle\\Command\\', __DIR__ . '/Command/');
+        $services->load('Survos\\ArkBundle\\Command\\', __DIR__.'/Command/');
 
         // Two commands have non-nullable Doctrine deps that fail autowiring
         // when the host app doesn't map ArkBundle entities in doctrine.yaml.
         // Override with `ignoreOnInvalid()` so the bundle stays installable
         // without requiring app-level Doctrine config.
-        $services->set(\Survos\ArkBundle\Command\ArkExportCommand::class)
-            ->args([service(\Survos\ArkBundle\Repository\ArkBindingRepository::class)->ignoreOnInvalid()]);
+        $services->set(Command\ArkExportCommand::class)
+            ->args([service(ArkBindingRepository::class)->ignoreOnInvalid()]);
 
-        $services->set(\Survos\ArkBundle\Command\ArkImportCommand::class)
+        $services->set(Command\ArkImportCommand::class)
             ->args([service('doctrine.orm.entity_manager')->ignoreOnInvalid()]);
     }
 }

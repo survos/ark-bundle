@@ -12,7 +12,8 @@ final class ArkTwigRuntime
 {
     public function __construct(
         private readonly ArkUlidCodec $codec,
-    ) {}
+    ) {
+    }
 
     #[AsTwigFunction('ark_ulid_name')]
     public function name(Ulid|string $ulid): string

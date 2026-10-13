@@ -25,7 +25,8 @@ final class ArkImportCommand
     // in exactly the same way for an app with no Doctrine at all.
     public function __construct(
         private readonly ?EntityManagerInterface $em = null,
-    ) {}
+    ) {
+    }
 
     public function __invoke(
         SymfonyStyle $io,
@@ -39,30 +40,30 @@ final class ArkImportCommand
         if (null === $this->em) {
             $io->error(
                 "ArkBundle entities are not mapped in this application, so import is unavailable.\n\n"
-                . "Add the bundle's entities to config/packages/doctrine.yaml:\n\n"
-                . "    doctrine:\n"
-                . "        orm:\n"
-                . "            mappings:\n"
-                . "                SurvosArkBundle:\n"
-                . "                    type: attribute\n"
-                . "                    dir: '%kernel.project_dir%/vendor/survos/ark-bundle/src/Entity'\n"
-                . "                    prefix: 'Survos\\ArkBundle\\Entity'\n"
-                . "                    is_bundle: false"
+                ."Add the bundle's entities to config/packages/doctrine.yaml:\n\n"
+                ."    doctrine:\n"
+                ."        orm:\n"
+                ."            mappings:\n"
+                ."                SurvosArkBundle:\n"
+                ."                    type: attribute\n"
+                ."                    dir: '%kernel.project_dir%/vendor/survos/ark-bundle/src/Entity'\n"
+                ."                    prefix: 'Survos\\ArkBundle\\Entity'\n"
+                .'                    is_bundle: false'
             );
 
             return Command::FAILURE;
         }
 
-        if ($input !== null && !class_exists(JsonlReader::class)) {
+        if (null !== $input && !class_exists(JsonlReader::class)) {
             $io->error("jsonl-bundle is not installed.\n\ncomposer req survos/jsonl-bundle");
 
             return Command::FAILURE;
         }
 
         $batchSize = max(1, $batchSize);
-        $imported  = 0;
-        $skipped   = 0;
-        $line      = 0;
+        $imported = 0;
+        $skipped = 0;
+        $line = 0;
 
         foreach ($this->rows($input) as $row) {
             ++$line;
@@ -104,7 +105,7 @@ final class ArkImportCommand
     /** @return iterable<array<string, mixed>> */
     private function rows(?string $input): iterable
     {
-        if ($input !== null) {
+        if (null !== $input) {
             foreach (JsonlReader::open($input) as $row) {
                 yield $row;
             }
@@ -114,7 +115,7 @@ final class ArkImportCommand
 
         while (($line = fgets(\STDIN)) !== false) {
             $line = trim($line);
-            if ($line === '') {
+            if ('' === $line) {
                 continue;
             }
 

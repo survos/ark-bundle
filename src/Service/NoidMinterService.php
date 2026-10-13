@@ -18,7 +18,8 @@ final class NoidMinterService
         private readonly string $template,
         private readonly string $dbType,
         private readonly string $dbPath,
-    ) {}
+    ) {
+    }
 
     private function requireNaan(): string
     {
@@ -68,14 +69,14 @@ final class NoidMinterService
         $value = Noid::fetch($this->open(DatabaseInterface::DB_RDONLY), 0, $this->toNoidId($name), 'where');
         $resolved = trim((string) $value);
 
-        return $resolved === '' ? null : $resolved;
+        return '' === $resolved ? null : $resolved;
     }
 
     public function validate(string $name): bool
     {
         $this->initializeMinterIfNeeded();
         $messages = Noid::validate($this->open(DatabaseInterface::DB_RDONLY), '-', $this->toNoidId($name));
-        if ($messages === []) {
+        if ([] === $messages) {
             return false;
         }
 
@@ -107,7 +108,7 @@ final class NoidMinterService
 
     public function close(): void
     {
-        if ($this->noidHandle === null) {
+        if (null === $this->noidHandle) {
             return;
         }
 
@@ -123,7 +124,7 @@ final class NoidMinterService
             mkdir($this->dbPath, 0775, true);
         }
 
-        $readme = rtrim($this->dbPath, '/') . '/NOID/README';
+        $readme = rtrim($this->dbPath, '/').'/NOID/README';
         if (is_file($readme)) {
             return;
         }
@@ -135,7 +136,7 @@ final class NoidMinterService
             'long',
             $this->requireNaan(),
             'Survos',
-            $this->shoulder !== '' ? $this->shoulder : 'ark',
+            '' !== $this->shoulder ? $this->shoulder : 'ark',
         );
     }
 
@@ -156,7 +157,7 @@ final class NoidMinterService
 
     private function open(string $flags): string
     {
-        if ($this->noidHandle !== null) {
+        if (null !== $this->noidHandle) {
             return $this->noidHandle;
         }
 
@@ -178,13 +179,13 @@ final class NoidMinterService
 
     private function extractNameFromNoidId(string $id): string
     {
-        $prefix = $this->requireNaan() . '/';
+        $prefix = $this->requireNaan().'/';
         if (str_starts_with($id, $prefix)) {
             return substr($id, strlen($prefix));
         }
 
         $slash = strpos($id, '/');
 
-        return $slash === false ? $id : substr($id, $slash + 1);
+        return false === $slash ? $id : substr($id, $slash + 1);
     }
 }

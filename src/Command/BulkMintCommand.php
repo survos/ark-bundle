@@ -25,8 +25,9 @@ final class BulkMintCommand
         SymfonyStyle $io,
         #[Option('Preview changes only')] bool $dryRun = false,
     ): int {
-        if ($this->doctrine === null) {
+        if (null === $this->doctrine) {
             $io->writeln('Doctrine is not available.');
+
             return Command::FAILURE;
         }
 

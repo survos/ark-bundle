@@ -17,7 +17,8 @@ final class ArkUlidCodec
         private readonly ?string $naan,
         private readonly ?string $resolverBaseUrl,
         private readonly string $localPath,
-    ) {}
+    ) {
+    }
 
     public function name(Ulid|string $ulid): string
     {
@@ -56,9 +57,9 @@ final class ArkUlidCodec
     {
         $path = sprintf('%s/%s/%s', rtrim($this->localPath, '/'), $this->requireNaan(), $this->name($ulid));
 
-        return ($this->resolverBaseUrl === null || $this->resolverBaseUrl === '')
+        return (null === $this->resolverBaseUrl || '' === $this->resolverBaseUrl)
             ? $path
-            : rtrim($this->resolverBaseUrl, '/') . $path;
+            : rtrim($this->resolverBaseUrl, '/').$path;
     }
 
     public function n2tUrl(Ulid|string $ulid): string
@@ -68,7 +69,7 @@ final class ArkUlidCodec
 
     public function ulid(string $name): Ulid
     {
-        if (strlen($name) !== self::LENGTH) {
+        if (self::LENGTH !== strlen($name)) {
             throw new \InvalidArgumentException(sprintf('ARK ULID names must be %d characters.', self::LENGTH));
         }
 
@@ -83,13 +84,13 @@ final class ArkUlidCodec
             $carry = $alphabet[$char];
             foreach ($bytes as &$byte) {
                 $carry += $byte * 58;
-                $byte = $carry & 0xff;
+                $byte = $carry & 0xFF;
                 $carry >>= 8;
             }
             unset($byte);
 
             while ($carry > 0) {
-                $bytes[] = $carry & 0xff;
+                $bytes[] = $carry & 0xFF;
                 $carry >>= 8;
             }
         }

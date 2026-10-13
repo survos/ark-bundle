@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Survos\ArkBundle\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\ExactFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SortFilter;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\QueryParameter;
-use ApiPlatform\Doctrine\Orm\Filter\ExactFilter;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\QueryParameter;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Survos\ArkBundle\Repository\ArkBindingRepository;
@@ -83,7 +83,7 @@ class ArkBinding
         #[ApiProperty(description: 'Optional human-readable label for browse views.')]
         public private(set) ?string $label = null,
     ) {
-        $this->id        = (string) new Ulid();
+        $this->id = (string) new Ulid();
         $this->createdAt = new \DateTimeImmutable();
     }
 
@@ -98,13 +98,13 @@ class ArkBinding
     public function toArray(): array
     {
         return [
-            'id'          => $this->id,
-            'createdAt'   => $this->createdAt->format(\DateTimeInterface::ATOM),
-            'ark'         => $this->ark,
+            'id' => $this->id,
+            'createdAt' => $this->createdAt->format(\DateTimeInterface::ATOM),
+            'ark' => $this->ark,
             'entityClass' => $this->entityClass,
-            'entityId'    => $this->entityId,
-            'targetUrl'   => $this->targetUrl,
-            'label'       => $this->label,
+            'entityId' => $this->entityId,
+            'targetUrl' => $this->targetUrl,
+            'label' => $this->label,
         ];
     }
 
@@ -112,7 +112,7 @@ class ArkBinding
     public static function fromArray(array $row): self
     {
         foreach (['ark', 'entityClass', 'entityId'] as $field) {
-            if (!isset($row[$field]) || !\is_string($row[$field]) || $row[$field] === '') {
+            if (!isset($row[$field]) || !\is_string($row[$field]) || '' === $row[$field]) {
                 throw new \InvalidArgumentException(sprintf('ArkBinding row is missing required field "%s".', $field));
             }
         }
@@ -125,11 +125,11 @@ class ArkBinding
             label: isset($row['label']) && \is_string($row['label']) ? $row['label'] : null,
         );
 
-        if (isset($row['id']) && \is_string($row['id']) && $row['id'] !== '') {
+        if (isset($row['id']) && \is_string($row['id']) && '' !== $row['id']) {
             $binding->id = $row['id'];
         }
 
-        if (isset($row['createdAt']) && \is_string($row['createdAt']) && $row['createdAt'] !== '') {
+        if (isset($row['createdAt']) && \is_string($row['createdAt']) && '' !== $row['createdAt']) {
             $binding->createdAt = new \DateTimeImmutable($row['createdAt']);
         }
 

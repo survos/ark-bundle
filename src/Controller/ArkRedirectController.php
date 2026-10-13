@@ -16,7 +16,8 @@ final class ArkRedirectController
         private readonly ArkRegistry $registry,
         private readonly string $naan,
         private readonly bool $n2tResolve,
-    ) {}
+    ) {
+    }
 
     #[Route('/{naan}/{name}', name: 'survos_ark_resolve', requirements: ['name' => '.+'], methods: ['GET'])]
     public function __invoke(Request $request, string $naan, string $name): Response
@@ -26,7 +27,7 @@ final class ArkRedirectController
         }
 
         $url = $this->registry->resolve($name);
-        if ($url === null) {
+        if (null === $url) {
             return new Response('ARK not found.', Response::HTTP_NOT_FOUND);
         }
 

@@ -18,32 +18,33 @@ final class ReindexCommand
     public function __construct(
         private readonly NoidMinterService $minter,
         private readonly ?ArkBindingRepository $bindings = null,
-    ) {}
+    ) {
+    }
 
     public function __invoke(
         SymfonyStyle $io,
         #[Option('Preview changes without writing to the NOID database.')]
         bool $dryRun = false,
     ): int {
-        if ($this->bindings === null) {
+        if (null === $this->bindings) {
             $io->error('ArkBindingRepository is not available — is Doctrine configured?');
 
             return Command::FAILURE;
         }
 
-        $count   = 0;
+        $count = 0;
         $skipped = 0;
 
         foreach ($this->bindings->iterateForExport() as $binding) {
             \assert($binding instanceof ArkBinding);
 
-            if ($binding->targetUrl === null) {
+            if (null === $binding->targetUrl) {
                 ++$skipped;
                 continue;
             }
 
             $name = $this->minter->extractNoid($binding->ark);
-            if ($name === null) {
+            if (null === $name) {
                 ++$skipped;
                 continue;
             }

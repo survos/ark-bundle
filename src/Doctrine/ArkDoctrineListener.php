@@ -19,7 +19,8 @@ final class ArkDoctrineListener
     public function __construct(
         private readonly NoidMinterService $minter,
         private readonly bool $autoMint = true,
-    ) {}
+    ) {
+    }
 
     public function prePersist(PrePersistEventArgs $args): void
     {
@@ -29,7 +30,7 @@ final class ArkDoctrineListener
             return;
         }
 
-        if ($entity->getArk() !== null) {
+        if (null !== $entity->getArk()) {
             return;
         }
 
@@ -38,24 +39,24 @@ final class ArkDoctrineListener
         }
 
         $noid = $this->minter->mint();
-        $ark  = $this->minter->buildFullArk($noid);
+        $ark = $this->minter->buildFullArk($noid);
         $entity->setArk($ark);
 
         $target = $entity->getArkTarget();
-        if ($target !== '') {
+        if ('' !== $target) {
             $this->minter->bind($noid, $target);
         }
 
         // For entities with pre-generated IDs (ULID/UUID), create an ArkBinding row
         // in the same flush cycle. Auto-increment entities (ID not yet set) will be
         // indexed lazily on first resolution or via ark:reindex.
-        $em   = $args->getObjectManager();
+        $em = $args->getObjectManager();
         $meta = $em->getClassMetadata($entity::class);
-        $ids  = $meta->getIdentifierValues($entity);
+        $ids = $meta->getIdentifierValues($entity);
 
-        if ($ids !== []) {
+        if ([] !== $ids) {
             $entityClass = substr(strrchr($entity::class, '\\') ?: $entity::class, 1);
-            $binding     = new ArkBinding($ark, $entityClass, (string) reset($ids), $target !== '' ? $target : null);
+            $binding = new ArkBinding($ark, $entityClass, (string) reset($ids), '' !== $target ? $target : null);
             $em->persist($binding);
         }
     }
@@ -69,7 +70,7 @@ final class ArkDoctrineListener
         }
 
         $ark = $entity->getArk();
-        if ($ark === null) {
+        if (null === $ark) {
             return;
         }
 
@@ -85,9 +86,9 @@ final class ArkDoctrineListener
         $oldTarget = $changeSet['ark'][0] ?? null;
         $newTarget = $entity->getArkTarget();
 
-        if ($oldTarget !== $newTarget && $newTarget !== '') {
+        if ($oldTarget !== $newTarget && '' !== $newTarget) {
             $noid = $this->minter->extractNoid($ark);
-            if ($noid !== null) {
+            if (null !== $noid) {
                 $this->minter->rebind($noid, $newTarget);
             }
         }

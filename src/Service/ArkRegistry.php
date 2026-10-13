@@ -20,23 +20,24 @@ final class ArkRegistry
         private readonly ?ManagerRegistry $doctrine = null,
         private readonly ?ArkBindingRepository $bindingRepository = null,
         private readonly ?EntityManagerInterface $em = null,
-    ) {}
+    ) {
+    }
 
     public function resolve(string $name): ?string
     {
         [$baseName, $qualifier] = $this->splitName($name);
 
         $baseTarget = $this->resolveBaseName($baseName);
-        if ($baseTarget === null) {
+        if (null === $baseTarget) {
             return null;
         }
 
-        if ($qualifier === null || $qualifier === '') {
+        if (null === $qualifier || '' === $qualifier) {
             return $baseTarget;
         }
 
         $parent = $this->findArkableByName($baseName);
-        if ($parent === null) {
+        if (null === $parent) {
             return $baseTarget;
         }
 
@@ -50,16 +51,16 @@ final class ArkRegistry
         $ark = sprintf('ark:/%s/%s', $this->minter->getNaan(), $name);
 
         // Primary path: ArkBinding table (single SQL query, has entity context)
-        if ($this->bindingRepository !== null) {
+        if (null !== $this->bindingRepository) {
             $binding = $this->bindingRepository->findByArk($ark);
-            if ($binding !== null && $binding->targetUrl !== null) {
+            if (null !== $binding && null !== $binding->targetUrl) {
                 return $this->normalizeUrl($binding->targetUrl);
             }
         }
 
         // Legacy path: NOID db (in-process binary store, no entity context)
         $resolved = $this->minter->resolve($name);
-        if ($resolved !== null) {
+        if (null !== $resolved) {
             return $this->normalizeUrl($resolved);
         }
 
@@ -79,24 +80,24 @@ final class ArkRegistry
     /** Create an ArkBinding row on first resolution of a previously unindexed entity. */
     private function lazilyCreateBinding(string $ark, ArkableInterface $entity, string $target): void
     {
-        if ($this->em === null || $this->bindingRepository !== null && $this->bindingRepository->findByArk($ark) !== null) {
+        if (null === $this->em || null !== $this->bindingRepository && null !== $this->bindingRepository->findByArk($ark)) {
             return;
         }
 
         $ids = $this->em->getClassMetadata($entity::class)->getIdentifierValues($entity);
-        if ($ids === []) {
+        if ([] === $ids) {
             return;
         }
 
         $entityClass = substr(strrchr($entity::class, '\\') ?: $entity::class, 1);
-        $binding     = new ArkBinding($ark, $entityClass, (string) reset($ids), $target);
+        $binding = new ArkBinding($ark, $entityClass, (string) reset($ids), $target);
         $this->em->persist($binding);
         $this->em->flush();
     }
 
     private function findArkableByName(string $name): ?ArkableInterface
     {
-        if ($this->doctrine === null) {
+        if (null === $this->doctrine) {
             return null;
         }
 
@@ -122,7 +123,7 @@ final class ArkRegistry
 
     private function findQualifiedTarget(ArkableInterface $parent, string $qualifier): ?string
     {
-        if ($this->doctrine === null) {
+        if (null === $this->doctrine) {
             return null;
         }
 
@@ -163,7 +164,7 @@ final class ArkRegistry
 
         [$base, $qualifier] = explode('/', $name, 2);
 
-        return [$base, $qualifier !== '' ? $qualifier : null];
+        return [$base, '' !== $qualifier ? $qualifier : null];
     }
 
     private function isSameEntity(ObjectManager $manager, object $a, object $b): bool
@@ -177,10 +178,10 @@ final class ArkRegistry
         }
 
         $meta = $manager->getClassMetadata($a::class);
-        $aId  = $meta->getIdentifierValues($a);
-        $bId  = $meta->getIdentifierValues($b);
+        $aId = $meta->getIdentifierValues($a);
+        $bId = $meta->getIdentifierValues($b);
 
-        return $aId !== [] && $aId === $bId;
+        return [] !== $aId && $aId === $bId;
     }
 
     private function normalizeUrl(string $url): string
@@ -191,6 +192,6 @@ final class ArkRegistry
 
         $base = $this->resolverBaseUrl ?? throw new \LogicException('survos_ark.resolver_base_url is not configured. Add "resolver_base_url: https://your-domain.org" to config/packages/survos_ark.yaml.');
 
-        return rtrim($base, '/') . '/' . ltrim($url, '/');
+        return rtrim($base, '/').'/'.ltrim($url, '/');
     }
 }

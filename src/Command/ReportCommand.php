@@ -19,8 +19,9 @@ final class ReportCommand
 
     public function __invoke(SymfonyStyle $io): int
     {
-        if ($this->doctrine === null) {
+        if (null === $this->doctrine) {
             $io->error('Doctrine is not available.');
+
             return Command::FAILURE;
         }
 
@@ -38,7 +39,7 @@ final class ReportCommand
                 $total = count($entities);
                 $minted = 0;
                 foreach ($entities as $entity) {
-                    if ($entity->getArk() !== null) {
+                    if (null !== $entity->getArk()) {
                         ++$minted;
                     }
                 }
